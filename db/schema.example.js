@@ -12,7 +12,6 @@ const ProductSchema = mongoose.Schema({
   updated_at: String,
 });
 
-// consider removing features, notes in sql file
 
 const FeatureSchema = mongoose.Schema({
   _id: Number,
