@@ -6,3 +6,6 @@
 \COPY photos FROM './db/data/photosfixed.csv' WITH DELIMITER ',' NULL AS 'null' CSV HEADER;
 \COPY skus FROM './db/data/skus.csv' WITH DELIMITER ',' NULL AS 'null' CSV HEADER;
 \COPY related FROM './db/data/related.csv' WITH DELIMITER ',' NULL AS 'null' CSV HEADER;
+
+ALTER TABLE products ADD COLUMN created_at DATE DEFAULT CURRENT_DATE;
+ALTER TABLE products ADD COLUMN updated_at DATE DEFAULT CURRENT_DATE;
