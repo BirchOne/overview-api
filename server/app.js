@@ -19,7 +19,7 @@ app.get('/products/?', async (req, res) => {
   try {
     await client.connect();
 
-    const products = await client.query(
+    const data = await client.query(
       `
         SELECT *
         FROM products
@@ -29,7 +29,7 @@ app.get('/products/?', async (req, res) => {
 
     await client.end();
 
-    res.send(products.rows);
+    res.send(data.rows);
   } catch (err) {
     res.sendStatus(500);
   }
@@ -81,16 +81,16 @@ app.get('/products/:product_id/styles', async (req, res) => {
 
     const products = await client.query(
       `
-        SELECT *,
+        SELECT id as style_id, name, original_price, sale_price, default_style as "default?",
         (
           SELECT json_agg(x) FROM (
-            SELECT * FROM photos WHERE style_id = styles.id
+            SELECT thumbnail_url, url FROM photos WHERE style_id = styles.id
           ) x
         ) photos,
         (
-          SELECT json_agg(x) FROM (
-            SELECT * FROM skus WHERE style_id = styles.id
-          ) x
+          SELECT json_object_agg(id, x) FROM (
+            SELECT id, quantity, size FROM skus WHERE style_id = styles.id
+          ) as x
         ) skus
         FROM styles WHERE product_id = ${id}
       `,
@@ -117,7 +117,7 @@ app.get('/products/:product_id/related', async (req, res) => {
   try {
     await client.connect();
 
-    const products = await client.query(
+    const result = await client.query(
       `
         SELECT related_id
         FROM related
@@ -127,11 +127,29 @@ app.get('/products/:product_id/related', async (req, res) => {
 
     await client.end();
 
-    // transform the data before sending it back to the client
-    res.send(products.rows);
+    const data = result.rows.map((item) => item.related_id);
+
+    res.send(data);
   } catch (err) {
     res.sendStatus(500);
   }
 });
 
 app.listen(port);
+
+// const products = await client.query(
+//   `
+//     SELECT id as style_id, name, original_price, sale_price, default_style as "default?",
+//     (
+//       SELECT json_agg(x) FROM (
+//         SELECT thumbnail_url, url FROM photos WHERE style_id = styles.id
+//       ) x
+//     ) photos,
+//     (
+//       SELECT json_agg(x) FROM (
+//         SELECT id, quantity, size FROM skus WHERE style_id = styles.id
+//       ) x
+//     ) skus
+//     FROM styles WHERE product_id = ${id}
+//   `,
+// );
