@@ -9,3 +9,9 @@
 
 ALTER TABLE products ADD COLUMN created_at DATE DEFAULT CURRENT_DATE;
 ALTER TABLE products ADD COLUMN updated_at DATE DEFAULT CURRENT_DATE;
+
+CREATE INDEX product_features_index ON features (product_id);
+CREATE INDEX product_styles_index ON styles (product_id);
+CREATE INDEX style_photos_index ON photos (style_id);
+CREATE INDEX style_skus_index ON skus (style_id);
+CREATE INDEX product_related_index ON related (product_id);
