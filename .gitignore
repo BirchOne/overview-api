@@ -1,4 +1,4 @@
 /node_modules
 .vscode
-/server/db/data
+/db/data
 .env
