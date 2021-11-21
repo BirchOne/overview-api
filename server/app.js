@@ -11,6 +11,12 @@ app.get('/products/?', async (req, res) => {
   const page = req.query.page || 1;
   const count = req.query.count || 5;
 
+  const query = `
+    SELECT *
+    FROM products
+    WHERE id >= ${(page - 1) * count + 1} AND id <= ${page * count}
+  `;
+
   const client = new Client({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
@@ -19,17 +25,11 @@ app.get('/products/?', async (req, res) => {
   try {
     await client.connect();
 
-    const data = await client.query(
-      `
-        SELECT *
-        FROM products
-        WHERE id >= ${(page - 1) * count + 1} AND id <= ${page * count}
-      `,
-    );
+    const result = await client.query(query);
 
     await client.end();
 
-    res.send(data.rows);
+    res.send(result.rows);
   } catch (err) {
     res.sendStatus(500);
   }
@@ -39,6 +39,16 @@ app.get('/products/?', async (req, res) => {
 app.get('/products/:product_id', async (req, res) => {
   const id = req.params.product_id;
 
+  const query = `
+    SELECT *,
+    (
+      SELECT json_agg(x) FROM (
+        SELECT feature, value FROM features WHERE product_id = ${id}
+      ) x
+    ) features
+    FROM products WHERE id = ${id}
+  `;
+
   const client = new Client({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
@@ -47,21 +57,11 @@ app.get('/products/:product_id', async (req, res) => {
   try {
     await client.connect();
 
-    const products = await client.query(
-      `
-        SELECT *,
-        (
-          SELECT json_agg(x) FROM (
-            SELECT feature, value FROM features WHERE product_id = ${id}
-          ) x
-        ) features
-        FROM products WHERE id = ${id}
-      `,
-    );
+    const result = await client.query(query);
 
     await client.end();
 
-    res.send(products.rows[0]);
+    res.send(result.rows[0]);
   } catch (err) {
     res.sendStatus(500);
   }
@@ -71,6 +71,21 @@ app.get('/products/:product_id', async (req, res) => {
 app.get('/products/:product_id/styles', async (req, res) => {
   const id = req.params.product_id;
 
+  const query = `
+    SELECT id as style_id, name, original_price, sale_price, default_style as "default?",
+    (
+      SELECT json_agg(x) FROM (
+        SELECT thumbnail_url, url FROM photos WHERE style_id = styles.id
+      ) x
+    ) photos,
+    (
+      SELECT json_object_agg(id, x) FROM (
+        SELECT id, quantity, size FROM skus WHERE style_id = styles.id
+      ) as x
+    ) skus
+    FROM styles WHERE product_id = ${id}
+  `;
+
   const client = new Client({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
@@ -79,27 +94,16 @@ app.get('/products/:product_id/styles', async (req, res) => {
   try {
     await client.connect();
 
-    const products = await client.query(
-      `
-        SELECT id as style_id, name, original_price, sale_price, default_style as "default?",
-        (
-          SELECT json_agg(x) FROM (
-            SELECT thumbnail_url, url FROM photos WHERE style_id = styles.id
-          ) x
-        ) photos,
-        (
-          SELECT json_object_agg(id, x) FROM (
-            SELECT id, quantity, size FROM skus WHERE style_id = styles.id
-          ) as x
-        ) skus
-        FROM styles WHERE product_id = ${id}
-      `,
-    );
+    const result = await client.query(query);
 
     await client.end();
 
-    // transform the data before sending it back to the client
-    res.send(products.rows);
+    const data = {
+      product_id: id,
+      results: result.rows,
+    };
+
+    res.send(data);
   } catch (err) {
     res.sendStatus(500);
   }
@@ -109,6 +113,12 @@ app.get('/products/:product_id/styles', async (req, res) => {
 app.get('/products/:product_id/related', async (req, res) => {
   const id = req.params.product_id;
 
+  const query = `
+    SELECT related_id
+    FROM related
+    WHERE product_id = ${id}
+  `;
+
   const client = new Client({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
@@ -117,13 +127,7 @@ app.get('/products/:product_id/related', async (req, res) => {
   try {
     await client.connect();
 
-    const result = await client.query(
-      `
-        SELECT related_id
-        FROM related
-        WHERE product_id = ${id}
-      `,
-    );
+    const result = await client.query(query);
 
     await client.end();
 
@@ -136,20 +140,3 @@ app.get('/products/:product_id/related', async (req, res) => {
 });
 
 app.listen(port);
-
-// const products = await client.query(
-//   `
-//     SELECT id as style_id, name, original_price, sale_price, default_style as "default?",
-//     (
-//       SELECT json_agg(x) FROM (
-//         SELECT thumbnail_url, url FROM photos WHERE style_id = styles.id
-//       ) x
-//     ) photos,
-//     (
-//       SELECT json_agg(x) FROM (
-//         SELECT id, quantity, size FROM skus WHERE style_id = styles.id
-//       ) x
-//     ) skus
-//     FROM styles WHERE product_id = ${id}
-//   `,
-// );
