@@ -1,4 +1,4 @@
-const queryDB = require('../../db/index');
+const queryDB = require('../../db/queryDB');
 
 exports.getMany = async (req, res) => {
   const page = req.query.page || 1;
