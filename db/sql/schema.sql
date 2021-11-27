@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS overview;
+-- DROP DATABASE IF EXISTS overview;
 
 
-CREATE DATABASE overview;
+-- CREATE DATABASE overview;
 \c overview;
 
 

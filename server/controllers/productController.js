@@ -1,4 +1,5 @@
 const queryDB = require('../../db/queryDB');
+const pool = require('../../db/pool');
 
 exports.getMany = async (req, res) => {
   const page = req.query.page || 1;
@@ -11,7 +12,7 @@ exports.getMany = async (req, res) => {
   `;
 
   try {
-    const result = await queryDB(query);
+    const result = await queryDB(pool, query);
 
     res.send(result.rows);
   } catch (err) {
@@ -33,7 +34,7 @@ exports.getOne = async (req, res) => {
   `;
 
   try {
-    const result = await queryDB(query);
+    const result = await queryDB(pool, query);
 
     res.send(result.rows[0]);
   } catch (err) {
@@ -60,7 +61,7 @@ exports.getStyles = async (req, res) => {
   `;
 
   try {
-    const result = await queryDB(query);
+    const result = await queryDB(pool, query);
 
     const data = {
       product_id: id,
@@ -83,7 +84,7 @@ exports.getRelated = async (req, res) => {
   `;
 
   try {
-    const result = await queryDB(query);
+    const result = await queryDB(pool, query);
 
     const data = result.rows.map((item) => item.related_id);
 

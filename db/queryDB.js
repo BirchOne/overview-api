@@ -1,21 +1,15 @@
-const { Client } = require('pg');
-
-const queryDB = async (query) => {
-  const client = new Client({
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-  });
+const queryDB = async (pool, query) => {
+  const client = await pool.connect();
 
   try {
-    await client.connect();
     const result = await client.query(query);
-    await client.end();
-
     return result;
   } catch (err) {
-    await client.end();
-
+    // TODO: Add logger
+    console.log('Error: ', err);
     throw new Error('Database Error');
+  } finally {
+    client.release();
   }
 };
 
