@@ -11,9 +11,10 @@ export const options = {
   },
 };
 
-const url = 'http://localhost:3001/products/1000000/styles';
-
 export default () => {
+  const id = Math.ceil(Math.random() * 1000011);
+  const url = `http://localhost:3001/products/${id}/styles`;
+
   http.get(url);
   sleep(0.1);
 };

@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 
 export const options = {
-  vus: 100,
+  vus: 200,
   duration: '30s',
   thresholds: {
     http_req_failed: ['rate<0.01'], // http errors should be less than 1%
@@ -11,9 +11,10 @@ export const options = {
   },
 };
 
-const url = 'http://localhost:3001/products/?page=100000&count=10';
-
 export default () => {
+  const page = Math.ceil(Math.random() * (1000011 / 5));
+  const url = `http://localhost:3001/products/?page=${page}&count=5`;
+
   http.get(url);
   sleep(0.1);
 };
