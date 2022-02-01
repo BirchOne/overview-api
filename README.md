@@ -1,4 +1,4 @@
-# Atlier Backend System
+# Atelier Backend System
 
 This project is an API infrastructure service for a retail e-commerce application, specifically focusing on providing details for a given product.
 
@@ -17,4 +17,4 @@ Node | Express | PostgreSQL | AWS EC2 | NGINX
 ## Testing
 
 - [x] Local: Jest, k6.io
-- [x] Deployment: Loader.io
+- [x] Deployment: Loader.io, New Relic
